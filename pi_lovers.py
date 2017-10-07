@@ -1,5 +1,4 @@
 from pymongo import MongoClient
-import pprint
 import random
 
 
@@ -9,7 +8,8 @@ def main():
     collection = db.elizabeth
 
     count = collection.count()
-    pprint.pprint(collection.find()[random.randrange(count)])
+    line = collection.find({}, {"line": 1, "_id": 0})[random.randrange(count)]
+    print(line["line"])
 
 
 if __name__ == '__main__':
