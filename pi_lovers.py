@@ -13,10 +13,33 @@ idx = nltk.text.ContextIndex([word.lower() for word in nltk.corpus.brown.words()
 
 client = MongoClient()
 db = client.pilovers
+collection = ''
 
 
 def random_number():
     return random.uniform(0, 1)
+
+
+def generate_mixed(line):
+    rearranged_line = ''
+    for word in nltk.word_tokenize(line):
+        if random_number() < 0.50:
+            rearranged_line += " " + generate_ascii(word)
+        else:
+            rearranged_line += " " + similar_words(word)
+    if random_number() < 0.50:
+        rearranged_line = rearrange_tokens(rearranged_line)
+    return rearranged_line.lstrip(' ')
+
+
+def generate_ascii(line):
+    rearranged_line = ''
+    for word in nltk.word_tokenize(line):
+        if random_number() < 0.50:
+            rearranged_line += " " + '%d' * len(word) % tuple(map(ord, word))
+        else:
+            rearranged_line += " " + word
+    return rearranged_line.lstrip(' ')
 
 
 def similar_words(line):
@@ -41,17 +64,23 @@ def rearrange_tokens(line):
 
 
 def process_line(line):
-    choice = random_number()
-    print(choice)
-    if choice < 0.25:
-        return rearrange_tokens(line)
-    elif 0.25 < choice < 0.50:
-        return similar_words(line)
+    if random_number() < 0.50:
+        choice = random_number()
+        print(choice)
+        if choice < 0.25:
+            return rearrange_tokens(line)
+        elif 0.25 < choice < 0.50:
+            return similar_words(line)
+        elif 0.50 < choice < 0.75:
+            return generate_ascii(line)
+        else:
+            return generate_mixed(line)
     else:
         return line
 
 
 def get_line():
+    global collection
     choice = random_number()
     if type == 0:
         if choice < 0.5:
