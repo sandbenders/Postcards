@@ -16,6 +16,12 @@ db = client.pilovers
 collection = ''
 
 
+def insert_post(line):
+    global collection
+    post = {"line": line}
+    post_id = collection.insert_one(post).inserted_id
+
+
 def random_number():
     return random.uniform(0, 1)
 
@@ -104,6 +110,8 @@ def main():
         line_processed = process_line(line)
         print(line)
         print(line_processed)
+        if line != line_processed:
+            insert_post(line_processed)
 
 
 if __name__ == '__main__':
