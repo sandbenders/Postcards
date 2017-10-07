@@ -1,8 +1,16 @@
 from pymongo import MongoClient
 import pprint
+import random
 
-client = MongoClient()
-db = client.pilovers
-collection = db.elizabeth
 
-pprint.pprint(collection.find_one())
+def main():
+    client = MongoClient()
+    db = client.pilovers
+    collection = db.elizabeth
+
+    count = collection.count()
+    pprint.pprint(collection.find()[random.randrange(count)])
+
+
+if __name__ == '__main__':
+    main()
