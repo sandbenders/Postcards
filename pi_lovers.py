@@ -2,7 +2,7 @@ import random
 import sys
 from threading import Thread
 
-from PyQt5.QtGui import QPainter, QPainterPath, QColor
+from PyQt5.QtGui import QPainter, QPainterPath, QColor, QPen
 from PyQt5.QtWidgets import QApplication, QWidget
 
 from Database import Database
@@ -66,7 +66,7 @@ class Window(QWidget):
                     "r": self.get_color_from_str(ascii_line_processed[:len_line]),
                     "g": self.get_color_from_str(ascii_line_processed[len_line:len_line * 2]),
                     "b": self.get_color_from_str(ascii_line_processed[len_line * 2:]),
-                    "stroke": len_line,
+                    "stroke": len_line / random.randrange(1, 3),
                     "between_x": random.randrange(self.x, 1920),
                     "between_y": random.randrange(self.y, 1920),
                     "final_x": final_x,
@@ -116,9 +116,10 @@ class Window(QWidget):
     @staticmethod
     def draw_bezier(qp, x, y, between_x, between_y, transparency, r, g, b, stroke, final_x, final_y):
         path = QPainterPath()
+        pen = QPen(QColor(r, g, b, transparency), stroke)
         path.moveTo(x, y)
         path.cubicTo(x, y, between_x, between_y, final_x, final_y)
-        qp.setPen(QColor(r, g, b, transparency))
+        qp.setPen(pen)
         qp.drawPath(path)
 
 
