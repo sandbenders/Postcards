@@ -1,7 +1,6 @@
 from Database import Database
 from ProcessLines import ProcessLines
 
-
 '''
     gender:
     male = 0
@@ -16,7 +15,7 @@ def main():
     database.gender = gender
     process_lines = ProcessLines()
     while True:
-        line = database.get_line()
+        line = database.get_line().lower()
         line_processed = process_lines.process_line(line)
         print(line)
         print(line_processed)
