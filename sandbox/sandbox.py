@@ -1,11 +1,21 @@
-import nltk
-import nltk.text
-import nltk.corpus
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget
 
-idx = nltk.text.ContextIndex([word.lower() for word in nltk.corpus.brown.words()])
-save = []
-rearranged_line = ''
-for word in nltk.word_tokenize("i want to solve this problem"):
-    save.append(idx.similar_words(word))
-    rearranged_line += " " + idx.similar_words(word)[0]
-print(rearranged_line)
+
+class Window(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.init_ui()
+
+    def init_ui(self):
+        self.setGeometry(0, 0, 1920, 1080)
+        self.setWindowTitle('Pi Lovers')
+        self.show()
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+
+    ex = Window()
+    sys.exit(app.exec_())

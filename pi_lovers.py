@@ -1,25 +1,15 @@
-from pymongo import MongoClient
+from Database import Database
 import random
 import nltk
 
 '''
-    type:
+    gender:
     male = 0
     female = 1
 '''
-type = 0
+gender = 0
 
 idx = nltk.text.ContextIndex([word.lower() for word in nltk.corpus.brown.words()])
-
-client = MongoClient()
-db = client.pilovers
-collection = ''
-
-
-def insert_post(line):
-    global collection
-    post = {"line": line}
-    post_id = collection.insert_one(post).inserted_id
 
 
 def random_number():
@@ -73,11 +63,11 @@ def process_line(line):
     if random_number() < 0.50:
         choice = random_number()
         print(choice)
-        if choice < 0.25:
+        if choice < 0.05:
             return rearrange_tokens(line)
-        elif 0.25 < choice < 0.50:
+        elif 0.05 < choice < 0.90:
             return similar_words(line)
-        elif 0.50 < choice < 0.75:
+        elif 0.90 < choice < 0.95:
             return generate_ascii(line)
         else:
             return generate_mixed(line)
@@ -85,33 +75,17 @@ def process_line(line):
         return line
 
 
-def get_line():
-    global collection
-    choice = random_number()
-    if type == 0:
-        if choice < 0.5:
-            collection = db.flaubert
-        else:
-            collection = db.robert
-    else:
-        if choice < 0.5:
-            collection = db.elizabeth
-        else:
-            collection = db.sand
-
-    count = collection.count()
-    line = collection.find({}, {"line": 1, "_id": 0})[random.randrange(count)]
-    return line['line']
-
-
 def main():
+    global gender
+    database = Database()
+    database.gender = gender
     while True:
-        line = get_line()
+        line = database.get_line()
         line_processed = process_line(line)
         print(line)
         print(line_processed)
         if line != line_processed:
-            insert_post(line_processed)
+            database.insert_post(line_processed)
 
 
 if __name__ == '__main__':
