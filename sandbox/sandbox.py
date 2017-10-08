@@ -24,7 +24,7 @@ class Example(QWidget):
 
     def drawBezierCurve(self, qp):
         path = QPainterPath()
-        redPen = QPen(Qt.red, 100)
+        redPen = QPen(Qt.red, 100, Qt.DashLine)
         path.moveTo(30, 30)
         path.cubicTo(30, 30, 200, 350, 350, 30)
         qp.setPen(redPen)

@@ -4,6 +4,7 @@ from threading import Thread
 
 from PyQt5.QtGui import QPainter, QPainterPath, QColor, QPen
 from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtCore import Qt
 
 from Database import Database
 from ProcessLines import ProcessLines
@@ -51,6 +52,7 @@ class Window(QWidget):
             ascii_line_processed = '%d' * len(line_processed) % tuple(map(ord, line_processed))
 
             if self.database.gender == 0:
+                line_style = [Qt.SolidLine, Qt.DashLine, Qt.DotLine, Qt.DashDotLine, Qt.DashDotDotLine]
                 if len(ascii_line_processed) % 2 == 0:
                     final_x = self.x + (len(ascii_line_processed) * random.randrange(1, 3))
                     final_y = self.y + (len(ascii_line_processed) * random.randrange(1, 3))
@@ -67,6 +69,7 @@ class Window(QWidget):
                     "g": self.get_color_from_str(ascii_line_processed[len_line:len_line * 2]),
                     "b": self.get_color_from_str(ascii_line_processed[len_line * 2:]),
                     "stroke": len_line / random.randrange(1, 3),
+                    "style": line_style[random.randrange(0, 4)],
                     "between_x": random.randrange(self.x, 1920),
                     "between_y": random.randrange(self.y, 1920),
                     "final_x": final_x,
@@ -109,14 +112,14 @@ class Window(QWidget):
             if d["gender"] == 1:
                 if d["transparency"] >= 0:
                     self.draw_bezier(qp, d["x"], d["y"], d["between_x"], d["between_y"],
-                                     d["transparency"], d["r"], d["g"], d["b"], d["stroke"],
+                                     d["transparency"], d["r"], d["g"], d["b"], d["stroke"], d["style"],
                                      d["final_x"], d["final_y"])
                     d["transparency"] -= 10
 
     @staticmethod
-    def draw_bezier(qp, x, y, between_x, between_y, transparency, r, g, b, stroke, final_x, final_y):
+    def draw_bezier(qp, x, y, between_x, between_y, transparency, r, g, b, stroke, style, final_x, final_y):
         path = QPainterPath()
-        pen = QPen(QColor(r, g, b, transparency), stroke)
+        pen = QPen(QColor(r, g, b, transparency), stroke, style)
         path.moveTo(x, y)
         path.cubicTo(x, y, between_x, between_y, final_x, final_y)
         qp.setPen(pen)
