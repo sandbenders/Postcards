@@ -1,11 +1,12 @@
-from Database import Database
-from ProcessLines import ProcessLines
-from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtGui import QPainter, QPainterPath, QBrush
-from PyQt5.QtCore import Qt
-from threading import Thread
 import random
 import sys
+from threading import Thread
+
+from PyQt5.QtGui import QPainter, QPainterPath, QColor
+from PyQt5.QtWidgets import QApplication, QWidget
+
+from Database import Database
+from ProcessLines import ProcessLines
 
 
 class Window(QWidget):
@@ -14,8 +15,8 @@ class Window(QWidget):
 
         self.drawings = []
         self.number_of_drawings = 0
-        self.x = 0
-        self.y = 0
+        self.x = random.randrange(0, 1920)
+        self.y = random.randrange(0, 1080)
         self.stroke = 1
 
         self.database = Database()
@@ -41,7 +42,7 @@ class Window(QWidget):
                 print(line_processed)
                 self.database.insert_post(line_processed)
 
-            if self.number_of_drawings > 100:
+            if self.number_of_drawings > 10:
                 self.number_of_drawings = 0
                 if self.database.gender == 0:
                     self.x = random.randrange(0, 1920)
@@ -61,16 +62,19 @@ class Window(QWidget):
                     "gender": 1,
                     "x": self.x,
                     "y": self.y,
-                    "times": 100,
+                    "transparency": 255,
                     "r": self.get_color_from_str(ascii_line_processed[:len_line]),
                     "g": self.get_color_from_str(ascii_line_processed[len_line:len_line * 2]),
                     "b": self.get_color_from_str(ascii_line_processed[len_line * 2:]),
                     "stroke": len_line,
+                    "between_x": random.randrange(self.x, 1920),
+                    "between_y": random.randrange(self.y, 1920),
                     "final_x": final_x,
                     "final_y": final_y
                 }
             self.drawings.append(draw)
-            print(type(self.drawings))
+            self.number_of_drawings += 1
+            self.update()
 
     @staticmethod
     def get_color_from_str(value_str):
@@ -91,20 +95,31 @@ class Window(QWidget):
         event.accept()
 
     def paintEvent(self, e):
-        qp = QPainter()
-        qp.begin(self)
-        qp.setRenderHint(QPainter.Antialiasing)
-        self.drawBezierCurve(qp)
-        qp.end()
+        print(len(self.drawings))
+        if len(self.drawings) > 0:
+            qp = QPainter()
+            qp.begin(self)
+            qp.setRenderHint(QPainter.Antialiasing)
+            self.draw_list(qp)
+            qp.end()
 
-    def drawBezierCurve(self, qp):
+    def draw_list(self, qp):
+        for d in self.drawings:
+            print(d)
+            if d["gender"] == 1:
+                if d["transparency"] >= 0:
+                    self.draw_bezier(qp, d["x"], d["y"], d["between_x"], d["between_y"],
+                                     d["transparency"], d["r"], d["g"], d["b"], d["stroke"],
+                                     d["final_x"], d["final_y"])
+                    d["transparency"] -= 10
+
+    @staticmethod
+    def draw_bezier(qp, x, y, between_x, between_y, transparency, r, g, b, stroke, final_x, final_y):
         path = QPainterPath()
-        path.moveTo(30, 30)
-        path.cubicTo(30, 30, 200, 350, 350, 30)
+        path.moveTo(x, y)
+        path.cubicTo(x, y, between_x, between_y, final_x, final_y)
+        qp.setPen(QColor(r, g, b, transparency))
         qp.drawPath(path)
-        brush = QBrush(Qt.SolidPattern)
-        qp.setBrush(brush)
-        qp.drawRect(10, 15, 90, 60)
 
 
 if __name__ == '__main__':
