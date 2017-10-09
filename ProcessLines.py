@@ -56,9 +56,9 @@ class ProcessLines:
             choice = self.random_number()
             print(choice)
             if choice < 0.05:
-                return self.rearrange_tokens(line)
-            elif 0.05 < choice < 0.90:
                 return self.similar_words(line)
+            elif 0.05 < choice < 0.90:
+                return self.rearrange_tokens(line)
             elif 0.90 < choice < 0.95:
                 return self.generate_ascii(line)
             else:
