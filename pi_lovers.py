@@ -26,7 +26,7 @@ class Window(QWidget):
         # gender:
         # male = 0
         # female = 1
-        self.database.gender = 0
+        self.database.gender = 1
 
         self.process_lines = ProcessLines()
         self.start_thread()
@@ -49,13 +49,15 @@ class Window(QWidget):
             print(line_processed)
             self.database.insert_post(line_processed)
 
-        if self.number_of_drawings > 10:
+        if self.number_of_drawings > random.randrange(1, 10):
             self.number_of_drawings = 0
             if self.database.gender == 0:
                 self.x = random.randrange(0, 1920)
                 self.y = random.randrange(0, 1080)
 
         ascii_line_processed = '%d' * len(line_processed) % tuple(map(ord, line_processed))
+
+        len_line = int(len(ascii_line_processed) / 3)
 
         if self.database.gender == 0:
             line_style = [Qt.SolidLine, Qt.DashLine, Qt.DotLine, Qt.DashDotLine, Qt.DashDotDotLine]
@@ -65,7 +67,6 @@ class Window(QWidget):
             else:
                 final_x = self.x - (len(ascii_line_processed) * random.randrange(1, 3))
                 final_y = self.y - (len(ascii_line_processed) * random.randrange(1, 3))
-            len_line = int(len(ascii_line_processed) / 3)
             draw = {
                 "gender": 1,
                 "x": self.x,
@@ -81,6 +82,22 @@ class Window(QWidget):
                 "final_x": final_x,
                 "final_y": final_y
             }
+        else:
+            height_rect = len(ascii_line_processed) * random.randrange(1, 3)
+            draw = {
+                "gender": 0,
+                "x": 0,
+                "y": self.y,
+                "transparency": random.randrange(0, 255),
+                "r": self.get_color_from_str(ascii_line_processed[:len_line]),
+                "g": self.get_color_from_str(ascii_line_processed[len_line:len_line * 2]),
+                "b": self.get_color_from_str(ascii_line_processed[len_line * 2:]),
+                "height": height_rect
+            }
+            self.y += height_rect
+            if self.y > 1080:
+                self.y = 0
+
         self.drawings.append(draw)
         self.number_of_drawings += 1
 
@@ -96,7 +113,7 @@ class Window(QWidget):
     def init_ui(self):
         self.setGeometry(0, 0, 1920, 1080)
         self.setWindowTitle('Pi Lovers')
-        self.show()
+        self.showFullScreen()
 
     @staticmethod
     def closeEvent(event):
@@ -106,13 +123,8 @@ class Window(QWidget):
         qp = QPainter()
         qp.begin(self)
         qp.setRenderHint(QPainter.Antialiasing)
-
-        if random.uniform(0, 1) < 0.05:
-            self.draw_text(qp)
-
         if len(self.drawings) > 0:
             self.draw_list(qp)
-
         qp.end()
 
     def draw_text(self, qp):
@@ -121,20 +133,31 @@ class Window(QWidget):
                           random.randrange(10, 255),
                           random.randrange(10, 255)))
         qp.setPen(pen)
-        qp.setFont(QFont('Decorative', random.randrange(10, 200)))
-        qp.drawText(random.randrange(0, 960), random.randrange(0, 540), self.line_after_processing)
+        qp.setFont(QFont('Decorative', random.randrange(5, 1000)))
+        qp.drawText(random.randrange(0, 1920), random.randrange(0, 1080), self.line_after_processing)
 
     def draw_list(self, qp):
         for d in self.drawings:
-            if d["gender"] == 1:
-                if d["transparency"] >= 0:
+            if d["transparency"] >= 0:
+                if d["gender"] == 1:
                     self.draw_bezier(qp, d["x"], d["y"], d["between_x"], d["between_y"],
                                      d["transparency"], d["r"], d["g"], d["b"], d["stroke"], d["style"],
                                      d["final_x"], d["final_y"])
-                    d["transparency"] -= 10
+                else:
+                    self.draw_rect(qp, d["x"], d["y"], d["transparency"], d["r"], d["g"], d["b"], d["height"])
+            else:
+                d["transparency"] -= 10
 
-    @staticmethod
-    def draw_bezier(qp, x, y, between_x, between_y, transparency, r, g, b, stroke, style, final_x, final_y):
+    def draw_rect(self, qp, x, y, transparency, r, g, b, height):
+        qp.setPen((QColor(r, g, b, transparency)))
+        qp.setBrush(QColor(r, g, b, transparency))
+        qp.drawRect(x, y, 1920, y + height)
+        if random.uniform(0, 1) < 0.05:
+            self.draw_text(qp)
+
+    def draw_bezier(self, qp, x, y, between_x, between_y, transparency, r, g, b, stroke, style, final_x, final_y):
+        if random.uniform(0, 1) < 0.05:
+            self.draw_text(qp)
         path = QPainterPath()
         pen = QPen(QColor(r, g, b, transparency), stroke, style)
         path.moveTo(x, y)

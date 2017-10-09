@@ -1,37 +1,46 @@
-from PyQt5.QtWidgets import QWidget, QApplication
-from PyQt5.QtGui import QPainter, QPainterPath, QPen
-from PyQt5.QtCore import Qt
 import sys
+from PyQt5.QtGui import QPainter, QPainterPath, QColor, QPen, QFont
+from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtCore import Qt
 
 
 class Example(QWidget):
     def __init__(self):
-        super().__init__()
+        super(Example, self).__init__()
 
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(300, 300, 380, 250)
-        self.setWindowTitle('Bézier curve')
+        self.setGeometry(300, 300, 350, 100)
+        self.setWindowTitle('Colours')
         self.show()
 
     def paintEvent(self, e):
         qp = QPainter()
         qp.begin(self)
-        qp.setRenderHint(QPainter.Antialiasing)
-        self.drawBezierCurve(qp)
+        self.drawRectangles(qp)
         qp.end()
 
-    def drawBezierCurve(self, qp):
-        path = QPainterPath()
-        redPen = QPen(Qt.red, 100, Qt.DashLine)
-        path.moveTo(30, 30)
-        path.cubicTo(30, 30, 200, 350, 350, 30)
-        qp.setPen(redPen)
-        qp.drawPath(path)
+    def drawRectangles(self, qp):
+        color = QColor(0, 0, 0)
+        color.setNamedColor('#d4d4d4')
+        qp.setPen(color)
+
+        qp.setBrush(QColor(200, 0, 0, 100))
+        qp.drawRect(10, 15, 90, 60)
+
+        qp.setBrush(QColor(255, 80, 0, 160))
+        qp.drawRect(130, 15, 90, 60)
+
+        qp.setBrush(QColor(25, 0, 90, 200))
+        qp.drawRect(250, 15, 90, 60)
 
 
-if __name__ == '__main__':
+def main():
     app = QApplication(sys.argv)
     ex = Example()
     sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()
