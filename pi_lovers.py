@@ -2,9 +2,9 @@ import random
 import sys
 from threading import Thread
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPainterPath, QColor, QPen, QFont
 from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtCore import Qt
 
 from Database import Database
 from ProcessLines import ProcessLines
@@ -38,7 +38,7 @@ class Window(QWidget):
     def run(self):
         while True:
             self.update()
-            Thread(target=self.get_line).start()
+            self.get_line()
 
     def get_line(self):
         line = self.database.get_line().lower()
@@ -145,8 +145,7 @@ class Window(QWidget):
                                      d["final_x"], d["final_y"])
                 else:
                     self.draw_rect(qp, d["x"], d["y"], d["transparency"], d["r"], d["g"], d["b"], d["height"])
-            else:
-                d["transparency"] -= 10
+                d["transparency"] -= 2
 
     def draw_rect(self, qp, x, y, transparency, r, g, b, height):
         qp.setPen((QColor(r, g, b, transparency)))

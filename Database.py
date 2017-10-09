@@ -1,5 +1,6 @@
-from pymongo import MongoClient
 import random
+
+from pymongo import MongoClient
 
 
 class Database:
@@ -15,6 +16,8 @@ class Database:
         post_id = self.collection.insert_one(post).inserted_id
 
     def get_line(self):
+        self.gender = random.randrange(0, 2)
+        print("GENDER: ", self.gender)
         choice = random.uniform(0, 1)
         if self.gender == 0:
             if choice < 0.5:
