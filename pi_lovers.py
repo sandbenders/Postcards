@@ -198,6 +198,7 @@ class Window(QWidget):
         self.setGeometry(0, 0, 1920, 1080)
         self.setWindowTitle('Pi Lovers')
         self.showFullScreen()
+        self.setCursor(Qt.BlankCursor)
 
     @staticmethod
     def closeEvent(event):
