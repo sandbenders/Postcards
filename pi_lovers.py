@@ -1,13 +1,78 @@
 import random
-import sys
-from threading import Thread
+import traceback, sys
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QPainterPath, QColor, QPen, QFont
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 
 from Database import Database
 from ProcessLines import ProcessLines
+
+
+class WorkerSignals(QObject):
+    '''
+    Defines the signals available from a running worker thread.
+
+    Supported signals are:
+
+    finished
+        No data
+
+    error
+        `tuple` (exctype, value, traceback.format_exc() )
+
+    result
+        `object` data returned from processing, anything
+
+    progress
+        `int` indicating % progress
+
+    '''
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
+    progress = pyqtSignal(int)
+
+
+class Worker(QRunnable):
+    '''
+    Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
+    '''
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+    @pyqtSlot()
+    def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done
 
 
 class Window(QWidget):
@@ -29,16 +94,35 @@ class Window(QWidget):
         self.database.gender = 1
 
         self.process_lines = ProcessLines()
-        self.start_thread()
+
         self.init_ui()
 
-    def start_thread(self):
-        Thread(target=self.run).start()
+        self.threadpool = QThreadPool()
+        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-    def run(self):
-        while True:
-            self.update()
-            self.get_line()
+        self.timers = []
+        timer_gui = QTimer()
+        timer_gui.setInterval(41)
+        timer_gui.timeout.connect(self.start_thread_gui)
+        timer_gui.start()
+        self.timers.append(timer_gui)
+
+        timer_get_line = QTimer()
+        timer_get_line.setInterval(1000)
+        timer_get_line.timeout.connect(self.start_thread_get_line)
+        timer_get_line.start()
+        self.timers.append(timer_get_line)
+
+    def start_thread_gui(self):
+        worker_update_gui = Worker(self.update_gui)
+        self.threadpool.start(worker_update_gui)
+
+    def start_thread_get_line(self):
+        worker_get_line = Worker(self.get_line)
+        self.threadpool.start(worker_get_line)
+
+    def update_gui(self):
+        self.update()
 
     def get_line(self):
         line = self.database.get_line().lower()

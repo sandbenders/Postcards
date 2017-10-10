@@ -1,46 +1,141 @@
-import sys
-from PyQt5.QtGui import QPainter, QPainterPath, QColor, QPen, QFont
-from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+
+import time
+import traceback, sys
 
 
-class Example(QWidget):
-    def __init__(self):
-        super(Example, self).__init__()
+class WorkerSignals(QObject):
+    '''
+    Defines the signals available from a running worker thread.
 
-        self.initUI()
+    Supported signals are:
 
-    def initUI(self):
-        self.setGeometry(300, 300, 350, 100)
-        self.setWindowTitle('Colours')
+    finished
+        No data
+
+    error
+        `tuple` (exctype, value, traceback.format_exc() )
+
+    result
+        `object` data returned from processing, anything
+
+    progress
+        `int` indicating % progress
+
+    '''
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
+    progress = pyqtSignal(int)
+
+
+class Worker(QRunnable):
+    '''
+    Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
+    '''
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+        # Add the callback to our kwargs
+        kwargs['progress_callback'] = self.signals.progress
+
+    @pyqtSlot()
+    def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done
+
+
+class MainWindow(QMainWindow):
+    def __init__(self, *args, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
+
+        self.counter = 0
+
+        layout = QVBoxLayout()
+
+        self.l = QLabel("Start")
+        b = QPushButton("DANGER!")
+        b.pressed.connect(self.oh_no)
+
+        layout.addWidget(self.l)
+        layout.addWidget(b)
+
+        w = QWidget()
+        w.setLayout(layout)
+
+        self.setCentralWidget(w)
+
         self.show()
 
-    def paintEvent(self, e):
-        qp = QPainter()
-        qp.begin(self)
-        self.drawRectangles(qp)
-        qp.end()
+        self.threadpool = QThreadPool()
+        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-    def drawRectangles(self, qp):
-        color = QColor(0, 0, 0)
-        color.setNamedColor('#d4d4d4')
-        qp.setPen(color)
+        self.timer = QTimer()
+        self.timer.setInterval(1000)
+        self.timer.timeout.connect(self.recurring_timer)
+        self.timer.start()
 
-        qp.setBrush(QColor(200, 0, 0, 100))
-        qp.drawRect(10, 15, 90, 60)
+    def progress_fn(self, n):
+        print("%d%% done" % n)
 
-        qp.setBrush(QColor(255, 80, 0, 160))
-        qp.drawRect(130, 15, 90, 60)
+    def execute_this_fn(self, progress_callback):
+        for n in range(0, 5):
+            time.sleep(1)
+            progress_callback.emit(n * 100 / 4)
 
-        qp.setBrush(QColor(25, 0, 90, 200))
-        qp.drawRect(250, 15, 90, 60)
+        return "Done."
+
+    def print_output(self, s):
+        print(s)
+
+    def thread_complete(self):
+        print("THREAD COMPLETE!")
+
+    def oh_no(self):
+        # Pass the function to execute
+        worker = Worker(self.execute_this_fn)  # Any other args, kwargs are passed to the run function
+        worker.signals.result.connect(self.print_output)
+        worker.signals.finished.connect(self.thread_complete)
+        worker.signals.progress.connect(self.progress_fn)
+
+        # Execute
+        self.threadpool.start(worker)
+
+    def recurring_timer(self):
+        self.counter += 1
+        self.l.setText("Counter: %d" % self.counter)
 
 
-def main():
-    app = QApplication(sys.argv)
-    ex = Example()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main()
+app = QApplication([])
+window = MainWindow()
+app.exec_()
