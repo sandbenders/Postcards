@@ -1,6 +1,7 @@
 import random
 
 from pymongo import MongoClient
+from ProcessLines import ProcessLines
 
 
 class Database:
@@ -10,6 +11,7 @@ class Database:
         self.db = self.client.pilovers
         self.collection = ''
         self.gender = 0
+        self.process_lines = ProcessLines()
 
     def insert_post(self, line):
         post = {"line": line}
@@ -32,4 +34,9 @@ class Database:
 
         count = self.collection.count()
         line = self.collection.find({}, {"line": 1, "_id": 0})[random.randrange(count)]
-        return line['line']
+        print(line['line'])
+        line_processed = self.process_lines.process_line(line['line'])
+        if line['line'] != line_processed:
+            print(line_processed)
+            self.insert_post(line_processed)
+        return line_processed

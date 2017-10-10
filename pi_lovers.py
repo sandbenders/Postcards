@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
 from Database import Database
-from ProcessLines import ProcessLines
 
 
 class WorkerSignals(QObject):
@@ -84,7 +83,7 @@ class Window(QWidget):
         self.x = random.randrange(0, 1920)
         self.y = random.randrange(0, 1080)
         self.stroke = 1
-        self.line_after_processing = ''
+        self.line_processed = ''
 
         self.database = Database()
 
@@ -92,8 +91,6 @@ class Window(QWidget):
         # male = 0
         # female = 1
         self.database.gender = 1
-
-        self.process_lines = ProcessLines()
 
         self.init_ui()
 
@@ -113,6 +110,12 @@ class Window(QWidget):
         timer_get_line.start()
         self.timers.append(timer_get_line)
 
+    def init_ui(self):
+        self.setGeometry(0, 0, 1920, 1080)
+        self.setWindowTitle('Pi Lovers')
+        self.showFullScreen()
+        self.setCursor(Qt.BlankCursor)
+
     def start_thread_gui(self):
         worker_update_gui = Worker(self.update_gui)
         self.threadpool.start(worker_update_gui)
@@ -125,21 +128,14 @@ class Window(QWidget):
         self.update()
 
     def get_line(self):
-        line = self.database.get_line().lower()
-        line_processed = self.process_lines.process_line(line)
-        self.line_after_processing = line_processed
-        print(line)
-        if line != line_processed:
-            print(line_processed)
-            self.database.insert_post(line_processed)
-
+        self.line_processed = self.database.get_line()
         if self.number_of_drawings > random.randrange(1, 10):
             self.number_of_drawings = 0
             if self.database.gender == 0:
                 self.x = random.randrange(0, 1920)
                 self.y = random.randrange(0, 1080)
 
-        ascii_line_processed = '%d' * len(line_processed) % tuple(map(ord, line_processed))
+        ascii_line_processed = '%d' * len(self.line_processed) % tuple(map(ord, self.line_processed))
 
         len_line = int(len(ascii_line_processed) / 3)
 
@@ -194,12 +190,6 @@ class Window(QWidget):
                 color = 0
         return color
 
-    def init_ui(self):
-        self.setGeometry(0, 0, 1920, 1080)
-        self.setWindowTitle('Pi Lovers')
-        self.showFullScreen()
-        self.setCursor(Qt.BlankCursor)
-
     @staticmethod
     def closeEvent(event):
         event.accept()
@@ -219,7 +209,7 @@ class Window(QWidget):
                           random.randrange(10, 255)))
         qp.setPen(pen)
         qp.setFont(QFont('Decorative', random.randrange(5, 1000)))
-        qp.drawText(random.randrange(0, 1920), random.randrange(0, 1080), self.line_after_processing)
+        qp.drawText(random.randrange(0, 1920), random.randrange(0, 1080), self.line_processed)
 
     def draw_list(self, qp):
         for d in self.drawings:
@@ -230,7 +220,7 @@ class Window(QWidget):
                                      d["final_x"], d["final_y"])
                 else:
                     self.draw_rect(qp, d["x"], d["y"], d["transparency"], d["r"], d["g"], d["b"], d["height"])
-                d["transparency"] -= 2
+                d["transparency"] -= 1
 
     def draw_rect(self, qp, x, y, transparency, r, g, b, height):
         qp.setPen((QColor(r, g, b, transparency)))
