@@ -5,8 +5,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
-from Database import Database
-from Worker import *
+from old.Database import Database
+from old.Worker import *
 
 
 class Window(QWidget):
