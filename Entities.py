@@ -25,29 +25,25 @@ class Entities():
         for entity in entities:
             random_sample = excel_file.sample()
 
+            latlgn = (random_sample.latitude.mean(),
+                      random_sample.longitude.mean())
+
+            data_entity = {
+                entity: {
+                    "country": random_sample.country.all(),
+                    "city": random_sample.city.all(),
+                    "latlgn": latlgn
+                }
+            }
+
             # postman
             if entity == entities[0]:
-                postman_latlgn = (random_sample.latitude.mean(),
-                                  random_sample.longitude.mean())
-                data_entity = {
-                    entity: {
-                        "country": random_sample.country.all(),
-                        "city": random_sample.city.all(),
-                        "latlgn": postman_latlgn
-                    }
-                }
+                postman_latlgn = latlgn
+            # flaubert, elizabeth and robert
             else:
-                # flaubert, elizabeth and robert
-                latlgn = (random_sample.latitude.mean(),
-                          random_sample.longitude.mean())
-                data_entity = {
-                    entity: {
-                        "country": random_sample.country.all(),
-                        "city": random_sample.city.all(),
-                        "latlgn": latlgn,
-                        "distance": geopy.distance.vincenty(postman_latlgn, latlgn).km
-                    }
-                }
+                data_entity[entity].update(
+                    {"distance": geopy.distance.vincenty(postman_latlgn, latlgn).km}
+                )
 
             output.append(data_entity)
 
