@@ -1,16 +1,20 @@
 import random
 import sys
+import pandas as pd
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
 from Worker import *
-
+from Entities import *
 
 class Window(QWidget):
     def __init__(self):
         super().__init__()
+
+        # read csv and assign cities
+        self.entities = Entities()
 
         self.drawings = []
         self.number_of_drawings = 0
@@ -37,9 +41,16 @@ class Window(QWidget):
         timer_get_line.start()
         self.timers.append(timer_get_line)
 
+    def random_extract_data_xlsx(self):
+        random_sample = self.excel_file.sample()
+        return [random_sample.country.all(),
+                         random_sample.city.all(),
+                         random_sample.latitude.mean(),
+                         random_sample.longitude.mean()]
+
     def init_ui(self):
         self.setGeometry(0, 0, 1920, 1080)
-        self.setWindowTitle("Postacards")
+        self.setWindowTitle("Postcards")
         # self.showFullScreen()
         self.setCursor(Qt.BlankCursor)
 
