@@ -1,5 +1,7 @@
 import pandas as pd
 import geopy.distance
+import random
+import numpy as np
 
 
 class Entities():
@@ -36,14 +38,19 @@ class Entities():
                 }
             }
 
+            print(entity)
+
             # postman
             if entity == entities[0]:
                 postman_latlgn = latlgn
             # flaubert, elizabeth and robert
             else:
-                data_entity[entity].update(
-                    {"distance": geopy.distance.vincenty(postman_latlgn, latlgn).km}
-                )
+                choose_recipient = entity
+                while choose_recipient == entity or choose_recipient == entities[0]:
+                    choose_recipient = random.choice(entities)
+                data_entity[entity]['distance'] = geopy.distance.vincenty(postman_latlgn, latlgn).km
+                data_entity[entity]['recipient'] = choose_recipient
+                data_entity[entity]['color'] = list(np.random.randint(0, 255, size=3))
 
             output.append(data_entity)
 

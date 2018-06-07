@@ -1,6 +1,5 @@
 import random
 import sys
-import pandas as pd
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -51,7 +50,7 @@ class Window(QWidget):
     def init_ui(self):
         self.setGeometry(0, 0, 1920, 1080)
         self.setWindowTitle("Postcards")
-        # self.showFullScreen()
+        #self.showFullScreen()
         self.setCursor(Qt.BlankCursor)
 
     def start_thread_gui(self):
