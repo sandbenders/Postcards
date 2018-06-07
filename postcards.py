@@ -31,8 +31,6 @@ class Window(QWidget):
         self.players = self.entities.random_cities()
 
         self.post = []
-
-        # print the entities
         for key, player in self.players.items():
             if player['entity'] != 'postman':
                 self.post.append([key, player['distance'], player['recipient']])
@@ -80,9 +78,15 @@ class Window(QWidget):
 
     def central_post(self):
         for letter in self.post:
+            print(letter)
             letter[1] -= SPEED_TO_POSTMAN
             if letter[1] < 1:
-                self.players[0]['hit']['iteration'] = 512
+                if letter[0] != 0:
+                    self.players[0]['hit']['iteration'] = 512
+                    self.post.append([0, self.players[letter[2]]['distance'], letter[2]])
+                else:
+                    self.players[letter[2]]['hit']['iteration'] = 512
+                    self.post.append([letter[2], self.players[letter[2]]['distance'], self.players[letter[2]]['recipient']])
                 self.post.remove(letter)
 
     @staticmethod
