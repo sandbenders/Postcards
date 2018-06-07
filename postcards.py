@@ -8,12 +8,11 @@ from PyQt5.QtCore import *
 from Worker import *
 from Entities import *
 
+FACTOR_PAINT_HIT = 1500
+
 class Window(QWidget):
     def __init__(self):
         super().__init__()
-
-        # read csv and assign cities
-        self.entities = Entities()
 
         self.drawings = []
         self.number_of_drawings = 0
@@ -23,6 +22,13 @@ class Window(QWidget):
         self.line_processed = ''
 
         self.init_ui()
+
+        # read csv and assign cities
+        self.entities = Entities()
+        self.players = self.entities.random_cities()
+        # print the entities
+        for entity in self.players:
+            print(entity)
 
         self.threadpool = QThreadPool()
         print("Multithreading with maximum {} threads".format(self.threadpool.maxThreadCount()))
@@ -51,6 +57,7 @@ class Window(QWidget):
         self.setGeometry(0, 0, 1920, 1080)
         self.setWindowTitle("Postcards")
         #self.showFullScreen()
+        self.show()
         self.setCursor(Qt.BlankCursor)
 
     def start_thread_gui(self):
@@ -81,7 +88,27 @@ class Window(QWidget):
         event.accept()
 
     def paintEvent(self, e):
-        print()
+        qp = QPainter()
+        qp.begin(self)
+        qp.setRenderHint(QPainter.Antialiasing)
+        self.paint_hits(qp)
+        qp.end()
+
+    def paint_hits(self, qp):
+        for entity in self.players:
+            if entity['hit']['iteration'] > 0:
+                size = entity['hit']['size']
+                distance = entity['distance']
+                transparency = entity['hit']['iteration']
+                if transparency > 256:
+                    transparency = (transparency-512)*-1
+                if transparency > 255:
+                    transparency = 255
+                color = entity['color']
+                qp.setPen(QColor(0,0,0, 0))
+                qp.setBrush((QColor(*color, transparency)))
+                qp.drawEllipse(entity['pos']['x'], entity['pos']['y'], size, size)
+                entity['hit']['iteration'] -= distance/FACTOR_PAINT_HIT
 
 
 if __name__ == "__main__":
