@@ -9,6 +9,8 @@ from Worker import *
 from Entities import *
 
 FACTOR_PAINT_HIT = 1500
+SPEED_TO_POSTMAN = 600
+
 
 class Window(QWidget):
     def __init__(self):
@@ -49,14 +51,14 @@ class Window(QWidget):
     def random_extract_data_xlsx(self):
         random_sample = self.excel_file.sample()
         return [random_sample.country.all(),
-                         random_sample.city.all(),
-                         random_sample.latitude.mean(),
-                         random_sample.longitude.mean()]
+                random_sample.city.all(),
+                random_sample.latitude.mean(),
+                random_sample.longitude.mean()]
 
     def init_ui(self):
         self.setGeometry(0, 0, 1920, 1080)
         self.setWindowTitle("Postcards")
-        #self.showFullScreen()
+        # self.showFullScreen()
         self.show()
         self.setCursor(Qt.BlankCursor)
 
@@ -65,14 +67,22 @@ class Window(QWidget):
         self.threadpool.start(worker_update_gui)
 
     def start_thread_get_line(self):
-        worker_get_line = Worker(self.get_line)
+        worker_get_line = Worker(self.central_post)
         self.threadpool.start(worker_get_line)
 
     def update_gui(self):
         self.update()
 
-    def get_line(self):
-        print()
+    def central_post(self):
+        for entity in self.players:
+            if entity['entity'] != 'postman':
+                letters = entity['letters']
+                if letters['sending']:
+                    letters['to_postman'] -= SPEED_TO_POSTMAN
+                    if letters['to_postman'] < 1:
+                        letters['to_postman'] = 0
+                        letters['sending'] = False
+                        self.players[0]['hit']['iteration'] = 512
 
     @staticmethod
     def get_color_from_str(value_str):
@@ -98,17 +108,19 @@ class Window(QWidget):
         for entity in self.players:
             if entity['hit']['iteration'] > 0:
                 size = entity['hit']['size']
-                distance = entity['distance']
                 transparency = entity['hit']['iteration']
                 if transparency > 256:
-                    transparency = (transparency-512)*-1
+                    transparency = (transparency - 512) * -1
                 if transparency > 255:
                     transparency = 255
                 color = entity['color']
-                qp.setPen(QColor(0,0,0, 0))
+                qp.setPen(QColor(0, 0, 0, 0))
                 qp.setBrush((QColor(*color, transparency)))
                 qp.drawEllipse(entity['pos']['x'], entity['pos']['y'], size, size)
-                entity['hit']['iteration'] -= distance/FACTOR_PAINT_HIT
+                if entity['entity'] != 'postman':
+                    entity['hit']['iteration'] -= entity['distance'] / FACTOR_PAINT_HIT
+                else:
+                    entity['hit']['iteration'] -= size / 20
 
 
 if __name__ == "__main__":

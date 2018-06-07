@@ -41,6 +41,11 @@ class Entities():
                     choose_recipient = random.choice(entities)
                 data_entity['distance'] = geopy.distance.vincenty(postman_latlgn, latlgn).km
                 data_entity['recipient'] = choose_recipient
+                data_entity['letters'] = {
+                    'to_postman': data_entity['distance'],
+                    'sending': True,
+                    'from_postman': -1
+                }
 
             hit = {
                 'iteration': 0 if entity == entities[0] else 512,
@@ -55,6 +60,7 @@ class Entities():
             data_entity['color'] = list(np.random.randint(0, 255, size=3))
             data_entity['hit'] = hit
             data_entity['pos'] = pos
+
 
             output.append(data_entity)
 
