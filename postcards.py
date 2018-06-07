@@ -10,6 +10,7 @@ from Entities import *
 
 FACTOR_PAINT_HIT = 1500
 SPEED_TO_POSTMAN = 600
+POSTMAN, FLAUBERT, ELIZABETH, ROBERT = range(0, 4)
 
 
 class Window(QWidget):
@@ -28,9 +29,13 @@ class Window(QWidget):
         # read csv and assign cities
         self.entities = Entities()
         self.players = self.entities.random_cities()
+
+        self.post = []
+
         # print the entities
-        for entity in self.players:
-            print(entity)
+        for key, player in self.players.items():
+            if player['entity'] != 'postman':
+                self.post.append([key, player['distance'], player['recipient']])
 
         self.threadpool = QThreadPool()
         print("Multithreading with maximum {} threads".format(self.threadpool.maxThreadCount()))
@@ -74,15 +79,11 @@ class Window(QWidget):
         self.update()
 
     def central_post(self):
-        for entity in self.players:
-            if entity['entity'] != 'postman':
-                letters = entity['letters']
-                if letters['sending']:
-                    letters['to_postman'] -= SPEED_TO_POSTMAN
-                    if letters['to_postman'] < 1:
-                        letters['to_postman'] = 0
-                        letters['sending'] = False
-                        self.players[0]['hit']['iteration'] = 512
+        for letter in self.post:
+            letter[1] -= SPEED_TO_POSTMAN
+            if letter[1] < 1:
+                self.players[0]['hit']['iteration'] = 512
+                self.post.remove(letter)
 
     @staticmethod
     def get_color_from_str(value_str):
@@ -105,22 +106,22 @@ class Window(QWidget):
         qp.end()
 
     def paint_hits(self, qp):
-        for entity in self.players:
-            if entity['hit']['iteration'] > 0:
-                size = entity['hit']['size']
-                transparency = entity['hit']['iteration']
+        for key, player in self.players.items():
+            if player['hit']['iteration'] > 0:
+                size = player['hit']['size']
+                transparency = player['hit']['iteration']
                 if transparency > 256:
                     transparency = (transparency - 512) * -1
                 if transparency > 255:
                     transparency = 255
-                color = entity['color']
+                color = player['color']
                 qp.setPen(QColor(0, 0, 0, 0))
                 qp.setBrush((QColor(*color, transparency)))
-                qp.drawEllipse(entity['pos']['x'], entity['pos']['y'], size, size)
-                if entity['entity'] != 'postman':
-                    entity['hit']['iteration'] -= entity['distance'] / FACTOR_PAINT_HIT
+                qp.drawEllipse(player['pos']['x'], player['pos']['y'], size, size)
+                if player['entity'] != 'postman':
+                    player['hit']['iteration'] -= player['distance'] / FACTOR_PAINT_HIT
                 else:
-                    entity['hit']['iteration'] -= size / 20
+                    player['hit']['iteration'] -= size / 20
 
 
 if __name__ == "__main__":
