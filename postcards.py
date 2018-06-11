@@ -82,8 +82,14 @@ class Window(QWidget):
     def init_ui(self):
         self.setGeometry(0, 0, 1920, 1080)
         self.setWindowTitle("Postcards")
+        self.change_background(list(np.random.randint(0, 255, size=3)))
         self.showFullScreen()
         self.setCursor(Qt.BlankCursor)
+
+    def change_background(self, color):
+        pal = QPalette()
+        pal.setColor(self.backgroundRole(), QColor(*color))
+        self.setPalette(pal)
 
     def start_thread_gui(self):
         worker_update_gui = Worker(self.update_gui)
@@ -113,9 +119,10 @@ class Window(QWidget):
                          random.randint(1, 4)])
                 self.post.remove(letter)
         self.num_iterations += 1
-        if self.num_iterations > 10:
+        if self.num_iterations > 100:
             if np.random.rand() < .5:
                 self.players = self.entities.random_cities()
+                self.change_background(list(np.random.randint(0, 255, size=3)))
             self.num_iterations = 0
 
     def add_letter_got_from_player(self, player):
@@ -172,7 +179,7 @@ class Window(QWidget):
                 'color': color
             }
         # type_letters, params, transparency
-        self.letters.append([type_letter, params, random.randrange(10, 255)])
+        self.letters.append([type_letter, params, random.randrange(10, 255), np.random.rand()])
         if np.random.rand() < .5:
             if np.random.rand() < .5:
                 x = random.randrange(0, 1920)
@@ -226,7 +233,7 @@ class Window(QWidget):
 
     def paint_letters(self, qp):
         for letter in self.letters:
-            probability_to_animate = np.random.rand()
+            probability_to_animate = letter[3]
             letter[2] -= 1
             type_letter = letter[0]
             params = letter[1]
