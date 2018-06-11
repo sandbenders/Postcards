@@ -28,6 +28,8 @@ class Window(QWidget):
 
         self.init_ui()
 
+        self.num_iterations = 0
+
         # read csv and assign cities
         self.entities = Entities()
         self.players = self.entities.random_cities()
@@ -35,7 +37,7 @@ class Window(QWidget):
         self.post = []
         for key, player in self.players.items():
             if player['entity'] != 'postman':
-                self.post.append([key, player['distance'], player['recipient'], random.randint(1,4)])
+                self.post.append([key, player['distance'], player['recipient'], random.randint(1, 4)])
 
         self.letters = []
         self.letters_content = self.read_letters_content()
@@ -79,8 +81,7 @@ class Window(QWidget):
     def init_ui(self):
         self.setGeometry(0, 0, 1920, 1080)
         self.setWindowTitle("Postcards")
-        # self.showFullScreen()
-        self.show()
+        self.showFullScreen()
         self.setCursor(Qt.BlankCursor)
 
     def start_thread_gui(self):
@@ -101,13 +102,20 @@ class Window(QWidget):
                 if letter[0] != 0:
                     # postman got the letter
                     self.players[0]['hit']['iteration'] = 512
-                    self.post.append([0, self.players[letter[2]]['distance'], letter[2], random.randint(1,4)])
+                    self.post.append([0, self.players[letter[2]]['distance'], letter[2], random.randint(1, 4)])
                 else:
                     # player got the letter
                     self.add_letter_got_from_player(letter[2])
                     self.players[letter[2]]['hit']['iteration'] = 512
-                    self.post.append([letter[2], self.players[letter[2]]['distance'], self.players[letter[2]]['recipient'], random.randint(1,4)])
+                    self.post.append(
+                        [letter[2], self.players[letter[2]]['distance'], self.players[letter[2]]['recipient'],
+                         random.randint(1, 4)])
                 self.post.remove(letter)
+        self.num_iterations += 1
+        if self.num_iterations > 10:
+            if np.random.rand() < .5:
+                self.players = self.entities.random_cities()
+            self.num_iterations = 0
 
     def add_letter_got_from_player(self, player):
         line_style = [Qt.SolidLine, Qt.DashLine, Qt.DotLine, Qt.DashDotLine, Qt.DashDotDotLine]
@@ -122,7 +130,7 @@ class Window(QWidget):
                 'x': x,
                 'y': y,
                 'color': color,
-                'stroke': random.randrange(1, 10),
+                'stroke': random.randrange(1, 1000),
                 'style': random.choice(line_style),
                 'between_x': random.randrange(x, 1920),
                 'between_y': random.randrange(y, 1080),
@@ -152,8 +160,9 @@ class Window(QWidget):
             }
         # type_letters, params, transparency
         self.letters.append([type_letter, params, random.randrange(10, 255)])
-        if  np.random.rand() < .5:
-            self.text_to_draw.append([random.choice(self.letters_content), x, y, random.randrange(5, 1000), list(np.random.randint(0, 255, size=3)), 255])
+        if np.random.rand() < .5:
+            self.text_to_draw.append([random.choice(self.letters_content), x, y, random.randrange(5, 1000),
+                                      list(np.random.randint(0, 255, size=3)), 255])
 
     @staticmethod
     def get_color_from_str(value_str):
