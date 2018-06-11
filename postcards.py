@@ -221,8 +221,12 @@ class Window(QWidget):
                 else:
                     player['hit']['iteration'] -= size / 20
 
+    def animate_range(self):
+        return random.randrange(0, 1) if np.random.rand() < 0.5 else random.uniform(-1, 0)
+
     def paint_letters(self, qp):
         for letter in self.letters:
+            probability_to_animate = np.random.rand()
             letter[2] -= 1
             type_letter = letter[0]
             params = letter[1]
@@ -240,18 +244,37 @@ class Window(QWidget):
                     qp.setPen(pen)
                     qp.setBrush(QColor(0, 0, 0, 0))
                     qp.drawPath(path)
+                    if probability_to_animate < .25:
+                        params['x'] -= self.animate_range()
+                        params['y'] -= self.animate_range()
+                        params['between_x'] -= self.animate_range()
+                        params['between_y'] -= self.animate_range()
+                        params['final_x'] -= self.animate_range()
+                        params['final_y'] -= self.animate_range()
                 elif type_letter == 'rect_full':
                     qp.setPen(QColor(*params['color'], transparency))
                     qp.setBrush(QColor(*params['color'], transparency))
                     qp.drawRect(x, y, 1920, y + params['height'])
+                    if probability_to_animate < .25:
+                        params['x'] -= self.animate_range()
+                        params['y'] -= self.animate_range()
+                        params['height'] -= self.animate_range()
                 elif type_letter == 'rect':
                     qp.setPen(QColor(*params['color'], transparency))
                     qp.setBrush(QColor(*params['color'], transparency))
                     qp.drawRect(x, y, params['size'], params['size'])
+                    if probability_to_animate < .25:
+                        params['x'] -= self.animate_range()
+                        params['y'] -= self.animate_range()
+                        params['size'] -= self.animate_range()
                 elif type_letter == 'ellipse':
                     qp.setPen(QColor(*params['color'], transparency))
                     qp.setBrush(QColor(*params['color'], transparency))
                     qp.drawEllipse(x, y, params['size'], params['size'])
+                    if probability_to_animate < .25:
+                        params['x'] -= self.animate_range()
+                        params['y'] -= self.animate_range()
+                        params['size'] -= self.animate_range()
                 elif type_letter == 'triangle':
                     path = QPainterPath()
                     qp.setBrush(QColor(*params['color'], transparency))
@@ -260,6 +283,14 @@ class Window(QWidget):
                     path.lineTo(params['epx2'], params['epy2'])
                     path.lineTo(x, y)
                     qp.drawPath(path)
+                    if probability_to_animate < .25:
+                        params['x'] -= self.animate_range()
+                        params['y'] -= self.animate_range()
+                        params['epx1'] -= self.animate_range()
+                        params['epy1'] -= self.animate_range()
+                        params['epx2'] -= self.animate_range()
+                        params['epy2'] -= self.animate_range()
+
 
     def paint_text(self, qp):
         for text in self.text_to_draw:
