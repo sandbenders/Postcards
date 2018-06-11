@@ -240,7 +240,7 @@ class Window(QWidget):
             x = params['x']
             y = params['y']
             transparency = letter[2]
-            if transparency < 0:
+            if transparency < 1:
                 self.letters.remove(letter)
             else:
                 if type_letter == 'bezier':
@@ -259,7 +259,7 @@ class Window(QWidget):
                         params['final_x'] -= self.animate_range()
                         params['final_y'] -= self.animate_range()
                 elif type_letter == 'rect_full':
-                    qp.setPen(QColor(*params['color'], transparency))
+                    qp.setPen(QColor(*params['color'], 0))
                     qp.setBrush(QColor(*params['color'], transparency))
                     qp.drawRect(x, y, 1920, y + params['height'])
                     if probability_to_animate < .25:
@@ -267,7 +267,7 @@ class Window(QWidget):
                         params['y'] -= self.animate_range()
                         params['height'] -= self.animate_range()
                 elif type_letter == 'rect':
-                    qp.setPen(QColor(*params['color'], transparency))
+                    qp.setPen(QColor(*params['color'], 0))
                     qp.setBrush(QColor(*params['color'], transparency))
                     qp.drawRect(x, y, params['size'], params['size'])
                     if probability_to_animate < .25:
@@ -275,7 +275,7 @@ class Window(QWidget):
                         params['y'] -= self.animate_range()
                         params['size'] -= self.animate_range()
                 elif type_letter == 'ellipse':
-                    qp.setPen(QColor(*params['color'], transparency))
+                    qp.setPen(QColor(*params['color'], 0))
                     qp.setBrush(QColor(*params['color'], transparency))
                     qp.drawEllipse(x, y, params['size'], params['size'])
                     if probability_to_animate < .25:
@@ -285,6 +285,7 @@ class Window(QWidget):
                 elif type_letter == 'triangle':
                     path = QPainterPath()
                     qp.setBrush(QColor(*params['color'], transparency))
+                    qp.setPen(QColor(*params['color'], 0))
                     path.moveTo(x, y)
                     path.lineTo(params['epx1'], params['epy1'])
                     path.lineTo(params['epx2'], params['epy2'])
