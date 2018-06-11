@@ -35,7 +35,7 @@ class Window(QWidget):
         self.post = []
         for key, player in self.players.items():
             if player['entity'] != 'postman':
-                self.post.append([key, player['distance'], player['recipient']])
+                self.post.append([key, player['distance'], player['recipient'], random.randint(1,4)])
 
         self.letters = []
         self.letters_content = self.read_letters_content()
@@ -96,17 +96,17 @@ class Window(QWidget):
 
     def central_post(self):
         for letter in self.post:
-            letter[1] -= SPEED_TO_POSTMAN
+            letter[1] -= SPEED_TO_POSTMAN * letter[3]
             if letter[1] < 1:
                 if letter[0] != 0:
                     # postman got the letter
                     self.players[0]['hit']['iteration'] = 512
-                    self.post.append([0, self.players[letter[2]]['distance'], letter[2]])
+                    self.post.append([0, self.players[letter[2]]['distance'], letter[2], random.randint(1,4)])
                 else:
                     # player got the letter
                     self.add_letter_got_from_player(letter[2])
                     self.players[letter[2]]['hit']['iteration'] = 512
-                    self.post.append([letter[2], self.players[letter[2]]['distance'], self.players[letter[2]]['recipient']])
+                    self.post.append([letter[2], self.players[letter[2]]['distance'], self.players[letter[2]]['recipient'], random.randint(1,4)])
                 self.post.remove(letter)
 
     def add_letter_got_from_player(self, player):
@@ -229,13 +229,13 @@ class Window(QWidget):
 
     def paint_text(self, qp):
         for text in self.text_to_draw:
-            qp.setFont(QFont('Decorative', text[3]))
-            qp.setPen(QColor(*text[4], text[5]))
-            qp.drawText(text[1], text[2], text[0])
-            if text[5] < 1:
+            text[5] -= 1
+            if text[5] < 0:
                 self.text_to_draw.remove(text)
             else:
-                text[5] -= 1
+                qp.setFont(QFont('Decorative', text[3]))
+                qp.setPen(QColor(*text[4], text[5]))
+                qp.drawText(text[1], text[2], text[0])
 
 
 if __name__ == "__main__":
