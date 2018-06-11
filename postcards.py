@@ -38,8 +38,9 @@ class Window(QWidget):
                 self.post.append([key, player['distance'], player['recipient']])
 
         self.letters = []
-
         self.letters_content = self.read_letters_content()
+
+        self.text_to_draw = []
 
         self.type_message = ['bezier',
                              'rect_full',
@@ -151,6 +152,8 @@ class Window(QWidget):
             }
         # type_letters, params, transparency
         self.letters.append([type_letter, params, random.randrange(10, 255)])
+        if  np.random.rand() < .5:
+            self.text_to_draw.append([random.choice(self.letters_content), x, y, random.randrange(5, 1000), list(np.random.randint(0, 255, size=3)), 255])
 
     @staticmethod
     def get_color_from_str(value_str):
@@ -171,6 +174,7 @@ class Window(QWidget):
         qp.setRenderHint(QPainter.Antialiasing)
         self.paint_hits(qp)
         self.paint_letters(qp)
+        self.paint_text(qp)
         qp.end()
 
     def paint_hits(self, qp):
@@ -193,7 +197,6 @@ class Window(QWidget):
 
     def paint_letters(self, qp):
         for letter in self.letters:
-            print(letter)
             letter[2] -= 1
             type_letter = letter[0]
             params = letter[1]
@@ -223,6 +226,16 @@ class Window(QWidget):
                     qp.setPen(QColor(*params['color'], transparency))
                     qp.setBrush(QColor(*params['color'], transparency))
                     qp.drawEllipse(x, y, params['size'], params['size'])
+
+    def paint_text(self, qp):
+        for text in self.text_to_draw:
+            qp.setFont(QFont('Decorative', text[3]))
+            qp.setPen(QColor(*text[4], text[5]))
+            qp.drawText(text[1], text[2], text[0])
+            if text[5] < 1:
+                self.text_to_draw.remove(text)
+            else:
+                text[5] -= 1
 
 
 if __name__ == "__main__":
