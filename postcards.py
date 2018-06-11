@@ -47,7 +47,8 @@ class Window(QWidget):
         self.type_message = ['bezier',
                              'rect_full',
                              'rect',
-                             'ellipse']
+                             'ellipse',
+                             'triangle']
 
         self.threadpool = QThreadPool()
         print('Multithreading with maximum {} threads'.format(self.threadpool.maxThreadCount()))
@@ -158,11 +159,27 @@ class Window(QWidget):
                 'color': color,
                 'size': size
             }
+        elif type_letter == 'triangle':
+            params = {
+                'x': x,
+                'y': y,
+                'epx1': random.randrange(0, 1920),
+                'epy1': random.randrange(0, 1080),
+                'spx2': random.randrange(0, 1920),
+                'spy2': random.randrange(0, 1080),
+                'epx2': random.randrange(0, 1920),
+                'epy2': random.randrange(0, 1080),
+                'color': color
+            }
         # type_letters, params, transparency
         self.letters.append([type_letter, params, random.randrange(10, 255)])
         if np.random.rand() < .5:
+            if np.random.rand() < .5:
+                x = random.randrange(0, 1920)
+                y = random.randrange(0, 1080)
             self.text_to_draw.append([random.choice(self.letters_content), x, y, random.randrange(5, 1000),
-                                      list(np.random.randint(0, 255, size=3)), 255])
+                                          list(np.random.randint(0, 255, size=3)), 255])
+
 
     @staticmethod
     def get_color_from_str(value_str):
@@ -231,10 +248,18 @@ class Window(QWidget):
                     qp.setPen(QColor(*params['color'], transparency))
                     qp.setBrush(QColor(*params['color'], transparency))
                     qp.drawRect(x, y, params['size'], params['size'])
-                elif type_letter == 'elipse':
+                elif type_letter == 'ellipse':
                     qp.setPen(QColor(*params['color'], transparency))
                     qp.setBrush(QColor(*params['color'], transparency))
                     qp.drawEllipse(x, y, params['size'], params['size'])
+                elif type_letter == 'triangle':
+                    path = QPainterPath()
+                    qp.setBrush(QColor(*params['color'], transparency))
+                    path.moveTo(x, y)
+                    path.lineTo(params['epx1'], params['epy1'])
+                    path.lineTo(params['epx2'], params['epy2'])
+                    path.lineTo(x, y)
+                    qp.drawPath(path)
 
     def paint_text(self, qp):
         for text in self.text_to_draw:
