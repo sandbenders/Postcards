@@ -67,7 +67,7 @@ class Window(QWidget):
         self.timers.append(timer_get_line)
 
     def read_letters_content(self):
-        with open('letters/letters.txt') as f:
+        with open('letters/letters.txt', encoding='utf-8') as f:
             content = f.readlines()
         content = [x.strip() for x in content]
         return content
