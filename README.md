@@ -1,5 +1,5 @@
 # POSTCARDS
-## Mixed Media Gsesamtkomposition score
+## Mixed Media _Gesamtkomposition_ score
 ### A collaboration between Fabrizio Poltronieri (visual concept & programming), Craig Vear (composition & programming), and Anne La Berge (composition, flute & voice)
 
 ![Postcards Video 1](videos/piLoversVideo1.gif)
