@@ -42,7 +42,7 @@ class Entities():
                 'country': random_sample.country.all(),
                 'city': random_sample.city.all(),
                 'latlgn': latlgn if i != 0 else postman_latlgn,
-                'distance': geopy.distance.vincenty(postman_latlgn, latlgn).km,
+                'distance': geopy.distance.geodesic(postman_latlgn, latlgn).km,
                 'recipient': choose_recipient,
                 'hit': {
                     'iteration': 0 if i == 0 else 512,

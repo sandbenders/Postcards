@@ -221,7 +221,7 @@ class Window(QWidget):
                     transparency = 255
                 color = player['color']
                 qp.setPen(QColor(0, 0, 0, 0))
-                qp.setBrush((QColor(*color, transparency)))
+                qp.setBrush((QColor(*color, int(transparency))))
                 qp.drawEllipse(player['pos']['x'], player['pos']['y'], size, size)
                 if player['entity'] != 'postman':
                     player['hit']['iteration'] -= player['distance'] / FACTOR_PAINT_HIT
