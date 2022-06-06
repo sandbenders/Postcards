@@ -1,14 +1,11 @@
-import random
 import sys
 
-import numpy as np
-
+from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
 
-from Worker import *
 from Entities import *
+from Worker import *
 
 FACTOR_PAINT_HIT = 1500
 SPEED_TO_POSTMAN = 600
